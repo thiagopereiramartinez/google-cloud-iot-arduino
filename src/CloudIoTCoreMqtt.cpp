@@ -58,6 +58,8 @@ void CloudIoTCoreMqtt::mqttConnect(bool skip) {
     if (this->mqttClient->lastError() != LWMQTT_SUCCESS && result){
       // TODO: refactorme
       // Inform the client why it could not connect and help debugging.
+      digitalWrite(2, LOW);
+
       logError();
       logReturnCode();
       logConfiguration(false);
@@ -87,11 +89,15 @@ void CloudIoTCoreMqtt::mqttConnect(bool skip) {
         keepgoing = true;
         Serial.println("Waiting 60 seconds, retry will likely fail");
         delay(this->__max_backoff__);
+
+        digitalWrite(2, LOW);
       } else {
         // We're now connected
         Serial.println("\nLibrary connected!");
         keepgoing = false;
         this->__backoff__ = this->__minbackoff__;
+
+        digitalWrite(2, HIGH);
       }
     }
   }
@@ -99,7 +105,7 @@ void CloudIoTCoreMqtt::mqttConnect(bool skip) {
   // Set QoS to 1 (ack) for configuration messages
   this->mqttClient->subscribe(device->getConfigTopic(), 1);
   // QoS 0 (no ack) for commands
-  this->mqttClient->subscribe(device->getCommandsTopic(), 0);
+  this->mqttClient->subscribe(device->getCommandsTopic(), 1);
 
   onConnect();
 }
